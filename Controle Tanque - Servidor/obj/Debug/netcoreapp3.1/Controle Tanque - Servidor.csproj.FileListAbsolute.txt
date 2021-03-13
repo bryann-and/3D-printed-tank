@@ -1,0 +1,13 @@
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\bin\Debug\netcoreapp3.1\Controle Tanque - Servidor.exe
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\bin\Debug\netcoreapp3.1\Controle Tanque - Servidor.deps.json
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\bin\Debug\netcoreapp3.1\Controle Tanque - Servidor.runtimeconfig.json
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\bin\Debug\netcoreapp3.1\Controle Tanque - Servidor.runtimeconfig.dev.json
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\bin\Debug\netcoreapp3.1\Controle Tanque - Servidor.dll
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\bin\Debug\netcoreapp3.1\Controle Tanque - Servidor.pdb
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\obj\Debug\netcoreapp3.1\Controle Tanque - Servidor.csprojAssemblyReference.cache
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\obj\Debug\netcoreapp3.1\Controle Tanque - Servidor.AssemblyInfoInputs.cache
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\obj\Debug\netcoreapp3.1\Controle Tanque - Servidor.AssemblyInfo.cs
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\obj\Debug\netcoreapp3.1\Controle Tanque - Servidor.csproj.CoreCompileInputs.cache
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\obj\Debug\netcoreapp3.1\Controle Tanque - Servidor.dll
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\obj\Debug\netcoreapp3.1\Controle Tanque - Servidor.pdb
+D:\3DPrinter\tank v2\Controle Tanque - Servidor\obj\Debug\netcoreapp3.1\Controle Tanque - Servidor.genruntimeconfig.cache

@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "Controle Tanque - Servidor/1.0.0": {
+        "runtime": {
+          "Controle Tanque - Servidor.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Controle Tanque - Servidor/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
