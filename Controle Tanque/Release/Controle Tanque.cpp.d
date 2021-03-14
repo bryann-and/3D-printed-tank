@@ -128,6 +128,11 @@ C:\Users\bryan\AppData\Local\Temp\VMBuilds\Controle\ Tanque\esp32_esp32\Release\
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\cores\esp32/Esp.h \
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\cores\esp32/Arduino.h \
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\variants\esp32/pins_arduino.h \
+ C:\Users\bryan\Documents\Arduino\libraries\ESP32Servo\src/ESP32Tone.h \
+ C:\Users\bryan\Documents\Arduino\libraries\ESP32Servo\src/ESP32PWM.h \
+ C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\cores\esp32/esp32-hal-ledc.h \
+ C:\Users\bryan\Documents\Arduino\libraries\ESP32Servo\src/ESP32PWM.h \
+ C:\Users\bryan\Documents\Arduino\libraries\ESP32Servo\src/analogWrite.h \
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\libraries\WiFi\src/WiFiUdp.h \
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\cores\esp32/Udp.h \
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\cores\esp32/cbuf.h \
@@ -188,4 +193,7 @@ C:\Users\bryan\AppData\Local\Temp\VMBuilds\Controle\ Tanque\esp32_esp32\Release\
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\libraries\WiFi\src/WiFiAP.h \
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\libraries\WiFi\src/ETH.h \
  C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4/tools/sdk/include/ethernet/esp_eth.h \
- C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\libraries\WiFi\src/WiFi.h
+ C:\Users\bryan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.4\libraries\WiFi\src/WiFi.h \
+ C:\Users\bryan\Documents\Arduino\libraries\ESP32Servo\src/ESP32Servo.h \
+ C:\Users\bryan\Documents\Arduino\libraries\ESP32Servo\src/analogWrite.h \
+ C:\Users\bryan\Documents\Arduino\libraries\ESP32Servo\src/ESP32Tone.h

@@ -17,4 +17,9 @@
   <ItemGroup>
     <None Include="Controle Tanque.ino" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="__vm\.Controle Tanque.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
