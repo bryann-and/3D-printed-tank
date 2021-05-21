@@ -19,9 +19,10 @@ namespace ControleTanqueServidor
 
             while (true)
             {
-                Controle.Update();
-                Console.WriteLine(Controle.leftThumb + " ---" + Controle.rightThumb);
-                EnviarInformacoes(Controle.leftThumb.Y.ToString());
+                Controle.Update();                
+
+                Console.WriteLine(Controle.leftThumb.Y + "|" + Controle.rightThumb.Y);
+                EnviarInformacoes(Controle.leftThumb.Y + "|" + Controle.rightThumb.Y);
                 System.Threading.Thread.Sleep(10);
             }
             
