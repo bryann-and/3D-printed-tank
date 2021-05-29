@@ -1,52 +1,39 @@
+// SimpleRx - the slave or the receiver
+
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
 
-// Radio
-int CE_PIN = 9;
-int CSN_PIN = 10;
-const byte thisSlaveAddress[5] = { 'R','x','A','A','A' };
-char dataToSend[10] = "";
+
+#define CE_PIN 26
+#define CSN_PIN 5
+
+const byte thisSlaveAddress[5] = {'R','x','A','A','A'};
 
 RF24 radio(CE_PIN, CSN_PIN);
 
-typedef struct {
-    int joyButton;
-    int joyX;
-    int joyY;
-}
-InformacoesEnvio;
+char dataReceived[10]; // this must match dataToSend in the TX
+bool newData = false;
 
-InformacoesEnvio dados;
+//===========
 
-void setup() 
-{
+void setup() {
+
     Serial.begin(9600);
 
-    Serial.println("Receptor iniciando");
+    Serial.println("SimpleRx Starting");
     radio.begin();
-    radio.setDataRate(RF24_250KBPS);
+    radio.setDataRate( RF24_250KBPS );
+    radio.openReadingPipe(1, thisSlaveAddress);
     radio.setPALevel(RF24_PA_MIN);
-    radio.openReadingPipe(1, thisSlaveAddress);    
     radio.startListening();
 }
 
-void loop() 
-{
-    while (radio.available())
-    {
-        Serial.print("teste");
-        radio.read(&dataToSend, sizeof(dataToSend));
-        PrintClass();
-    }
-}
+//=============
 
-void PrintClass()
-{
-    Serial.print("X: ");
-    Serial.print(dados.joyX);
-    Serial.print(" | Y: ");
-    Serial.print(dados.joyY);
-    Serial.print(" | Button: ");
-    Serial.println(dados.joyButton);
+void loop() {
+    while ( radio.available() ) {
+        radio.read( &dataReceived, sizeof(dataReceived) );
+        Serial.println(dataReceived);
+    }
 }
