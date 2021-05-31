@@ -2,10 +2,15 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-
+using System.Text.Json;
 
 namespace ControleTanqueServidor
 {
+    public class Dados
+    {
+        public int MotorEsquerdo { get; set; }
+        public int MotorDireito { get; set; }
+    }
     class Program
     {
         private static Socket Listener { get; set; }
@@ -14,22 +19,35 @@ namespace ControleTanqueServidor
 
         static void Main(string[] args)
         {
-            Controle = new XInputController();
-            IniciarConexao();
-
-            while (true)
+            try
             {
-                Controle.Update();                
+                Dados dados = new Dados();
+                Controle = new XInputController();
+                IniciarConexao();
 
-                Console.WriteLine(Controle.leftThumb.Y + "|" + Controle.rightThumb.Y);
-                EnviarInformacoes(Controle.leftThumb.Y + "|" + Controle.rightThumb.Y);
-                System.Threading.Thread.Sleep(10);
+                while (true)
+                {
+                    Controle.Update();
+
+                    //Console.WriteLine(Controle.leftThumb.Y + "|" + Controle.rightThumb.Y);
+
+                    dados.MotorEsquerdo = Controle.leftThumb.Y;
+                    dados.MotorDireito = Controle.rightThumb.Y;
+
+                    EnviarInformacoes(JsonSerializer.Serialize(dados));
+
+                    System.Threading.Thread.Sleep(10);
+                }
             }
-            
-            Console.WriteLine("\n Press any key to continue...");
-            Console.ReadKey();
-            Socket.Shutdown(SocketShutdown.Both);
-            Socket.Close();
+            catch (Exception e)
+            {
+                throw;
+            }
+            finally
+            {
+                Socket.Shutdown(SocketShutdown.Both);
+                Socket.Close();
+            }
         }
 
         static void IniciarConexao()
@@ -45,6 +63,7 @@ namespace ControleTanqueServidor
 
             Console.WriteLine("Aguardando conexão.");
             Socket = Listener.Accept();
+            Console.WriteLine("Conectado");
         }
 
         static void EnviarInformacoes(string msg)

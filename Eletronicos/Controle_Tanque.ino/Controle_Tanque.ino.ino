@@ -18,10 +18,10 @@
 #include <ETH.h>
 #include <WiFi.h>
 #include <ESP32Servo.h>
+#include <ArduinoJson.h>
 
 #include<stdio.h>
 #include <string.h>
-
 
 #pragma region Dados de Conexão
 const char* ssid = "Conecte se for capaz";
@@ -32,8 +32,8 @@ const uint16_t porta = 11000;
 
 WiFiClient cliente;
 
-int aceleradorEsquerda = 90;
-int aceleradorDireita = 90;
+int aceleradorEsquerda = 0;
+int aceleradorDireita = 0;
 
 #pragma region ESCs
 Servo EscEsquerdo;
@@ -47,7 +47,11 @@ void setup()
 {
     Serial.begin(9600);
 
-    delay(2000);
+    EscEsquerdo.attach(pinMotorEsquerdo, 1000, 2000);
+    EscDireito.attach(pinMotorDireito, 1000, 2000);
+
+    resetarAcelerador();
+    escreverESC();
 
     WiFi.begin(ssid, senha);
     Serial.println("Conectando...");
@@ -61,9 +65,6 @@ void setup()
     Serial.println(WiFi.localIP());
 
     conectarSocket();
-
-    EscEsquerdo.attach(pinMotorEsquerdo, 1000, 2000);
-    EscDireito.attach(pinMotorDireito, 1000, 2000);
 }
 
 // the loop function runs over and over again until power down or reset
@@ -74,38 +75,23 @@ void loop()
         while (cliente.available())
         {
             String string = cliente.readStringUntil(';');
-
-            char* cstr = new char[string.length() + 1];
-            strcpy(cstr, string.c_str());
-
-            // Extract the first token
-            char* token = strtok(cstr, "|");
-            // loop through the string to extract all other tokens
-            for (int i = 0; i < 2; i++)
-            {
-                //printf(" %s\n", token); //printing each token
-                if (i == 0)
-                {
-                    aceleradorEsquerda = atoi(token);
-                }
-                else
-                {
-                    aceleradorDireita = atoi(token);
-                }
-
-                token = strtok(NULL, "|");
-            }
+            handleReceivedMessage(string);
         }
     }
     else
     {
-        resetar();
+        resetarAcelerador();
         Serial.println("Conexão com o servidor perdida!");
         aceleradorEsquerda = aceleradorDireita = 0;
         delay(1000);
         conectarSocket();
     }
+    
+    escreverESC();
+}
 
+void escreverESC ()
+{
     EscEsquerdo.write(map(aceleradorEsquerda, -32768, 32767, 0, 180));
     EscDireito.write(map(aceleradorDireita, -32768, 32767, 0, 180));
 }
@@ -123,8 +109,23 @@ void conectarSocket()
     cliente.print("<EOF>");
 }
 
-void resetar()
+void resetarAcelerador()
 {
-    aceleradorEsquerda = 90;
-    aceleradorDireita = 90;
+    aceleradorEsquerda = 0;
+    aceleradorDireita = 0;
+}
+
+void handleReceivedMessage(String message)
+{
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, message);
+ 
+  if (error) //Check for errors in parsing
+  {
+    Serial.println("Parsing failed");
+    return;
+  }
+ 
+  aceleradorEsquerda = doc["MotorEsquerdo"];
+  aceleradorDireita = doc["MotorDireito"];
 }
