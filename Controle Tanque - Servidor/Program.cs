@@ -17,6 +17,8 @@ namespace ControleTanqueServidor
         private static Socket Socket { get; set; }
         private static XInputController Controle { get; set; }
 
+        private static int SteeringReducer = 2;
+
         static void Main(string[] args)
         {
             try
@@ -28,15 +30,60 @@ namespace ControleTanqueServidor
                 while (true)
                 {
                     Controle.Update();
+                    dados.MotorEsquerdo = dados.MotorDireito = Controle.leftThumb.Y;
 
-                    //Console.WriteLine(Controle.leftThumb.Y + "|" + Controle.rightThumb.Y);
+                    // Neutral steering
+                    if (Controle.leftThumb.Y == 0)
+                    {
+                        if (Controle.leftThumb.X > 0)
+                        {
+                            dados.MotorEsquerdo = Controle.leftThumb.X;
+                            dados.MotorDireito = -Controle.leftThumb.X;
+                        }
+                        else if (Controle.leftThumb.X < 0)
+                        {
+                            dados.MotorEsquerdo = Controle.leftThumb.X;
+                            dados.MotorDireito = -Controle.leftThumb.X;
+                        }
+                    }
+                    // Moving forward
+                    else if (Controle.leftThumb.Y > 0)
+                    {
+                        // Turning right
+                        if (Controle.leftThumb.X > 0)
+                        {
+                            dados.MotorEsquerdo = Controle.leftThumb.Y;
+                            dados.MotorDireito = Controle.leftThumb.Y - Controle.leftThumb.X / SteeringReducer;
+                        }
+                        // Turning left
+                        else if (Controle.leftThumb.X < 0)
+                        {
+                            dados.MotorEsquerdo = Controle.leftThumb.Y - Math.Abs(Controle.leftThumb.X) / SteeringReducer;
+                            dados.MotorDireito = Controle.leftThumb.Y;
+                        } 
+                    }
+                    // Moving backwards
+                    else
+                    {
+                        // Turning right
+                        if (Controle.leftThumb.X > 0)
+                        {
+                            dados.MotorEsquerdo = Controle.leftThumb.Y;
+                            dados.MotorDireito = Controle.leftThumb.Y + Controle.leftThumb.X / SteeringReducer;
+                        }
+                        // Turning left
+                        else if (Controle.leftThumb.X < 0)
+                        {
+                            dados.MotorEsquerdo = Controle.leftThumb.Y - Controle.leftThumb.X / SteeringReducer;
+                            dados.MotorDireito = Controle.leftThumb.Y;
+                        }
+                    }
 
-                    dados.MotorEsquerdo = Controle.leftThumb.Y;
-                    dados.MotorDireito = Controle.rightThumb.Y;
+                    Console.WriteLine(dados.MotorEsquerdo + "|" + dados.MotorDireito);
 
                     EnviarInformacoes(JsonSerializer.Serialize(dados));
 
-                    System.Threading.Thread.Sleep(10);
+                    System.Threading.Thread.Sleep(100);
                 }
             }
             catch (Exception e)

@@ -9,7 +9,7 @@ namespace ControleTanqueServidor
         Controller controller;
         Gamepad gamepad;
         public bool connected = false;
-        public int deadband = 2500;
+        public int deadband = 4000;
         public Point leftThumb, rightThumb = new Point(0, 0);
         public float leftTrigger, rightTrigger;
 
@@ -29,7 +29,7 @@ namespace ControleTanqueServidor
             }        
             
             gamepad = controller.GetState().Gamepad;
-
+            
             leftThumb.X = (Math.Abs((int) gamepad.LeftThumbX) < deadband) ? 0 : gamepad.LeftThumbX;
             leftThumb.Y = (Math.Abs((int) gamepad.LeftThumbY) < deadband) ? 0 : gamepad.LeftThumbY;
             rightThumb.X = (Math.Abs((int) gamepad.RightThumbX) < deadband) ? 0 : gamepad.RightThumbX;
