@@ -79,11 +79,13 @@ namespace ControleTanqueServidor
                         }
                     }
 
+                    //dados.MotorEsquerdo = 0;
+
                     Console.WriteLine(dados.MotorEsquerdo + "|" + dados.MotorDireito);
 
                     EnviarInformacoes(JsonSerializer.Serialize(dados));
 
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(10);
                 }
             }
             catch (Exception e)

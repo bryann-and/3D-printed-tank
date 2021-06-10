@@ -6,15 +6,15 @@
 int CE_PIN = 9;
 int CSN_PIN = 10;
 const byte slaveAddress[5] = { 'R','x','A','A','A' };
-char dataToSend[10] = "Testedegr";
 
 RF24 radio(CE_PIN, CSN_PIN);
 
 
 //Joystick
-int VRx = A3;
-int VRy = A2;
+int VRx = A0;
+int VRy = A1;
 int joyButtonPin = 2;
+int deadZone = 15;
 
 
 typedef struct {
@@ -41,17 +41,51 @@ void setup()
   radio.setDataRate(RF24_250KBPS);
   radio.setRetries(3, 5); // delay, count
   radio.openWritingPipe(slaveAddress);
-  radio.setPALevel(RF24_PA_MIN);
 }
 
 void loop()
 {
   LerJoystick();
   PrintClass();
-  // Enviando informações
-  if (radio.write(&dataToSend, sizeof(dataToSend)))
+  EnviarDados();
+
+  delay(100);
+}
+
+void LerJoystick()
+{
+  dados.joyButton = digitalRead(joyButtonPin);
+  dados.joyX = map(analogRead(VRx), 0, 1023, -512, 512);
+  // Invertendo o Y pois o joystick tem os valores invertidos
+  dados.joyY = map(analogRead(VRy), 0, 1023, 512, -512);
+
+  // Aplicando deadzone
+  if (abs(dados.joyX) < deadZone)
   {
-    Serial.println("  Acknowledge received");
+    dados.joyX = 0;
+  }
+  if (abs(dados.joyY) < deadZone)
+  {
+    dados.joyY = 0;
+  }
+}
+
+void PrintClass()
+{
+  Serial.print("X: ");
+  Serial.print(dados.joyX);
+  Serial.print(" | Y: ");
+  Serial.print(dados.joyY);
+  Serial.print(" | Button: ");
+  Serial.println(dados.joyButton);
+}
+
+void EnviarDados()
+{
+  // Enviando informações
+  if (radio.write(&dados, sizeof(dados)))
+  {
+    // Serial.println("  Acknowledge received");
   }
   else 
   {
@@ -63,23 +97,4 @@ void loop()
     uint64_t blank;
     radio.read(&blank, sizeof(blank));
   }
-
-  delay(100);
-}
-
-void LerJoystick()
-{
-  dados.joyButton = digitalRead(joyButtonPin);
-  dados.joyX = map(analogRead(VRx), 0, 1023, -512, 512);
-  dados.joyY = map(analogRead(VRy), 0, 1023, -512, 512);
-}
-
-void PrintClass()
-{
-  Serial.print("X: ");
-  Serial.print(dados.joyX);
-  Serial.print(" | Y: ");
-  Serial.print(dados.joyY);
-  Serial.print(" | Button: ");
-  Serial.println(dados.joyButton);
 }
