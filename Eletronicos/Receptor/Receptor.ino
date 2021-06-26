@@ -49,20 +49,8 @@ void setup()
 
 void loop()
 {
-	uint32_t timer = millis();
 	while (radio.available())
 	{
-		// Detectando se ocorreu timeout
-		if (millis() - timer > 1000)
-		{
-			radio.failureDetected = true;
-			resetarAcelerador();
-			// escreverESC();
-			Serial.println("Timeout!");
-
-			break;
-		}
-
 		radio.read(&dados, sizeof(dados));
 		//PrintClass();
 		processarAceleradorTanque();

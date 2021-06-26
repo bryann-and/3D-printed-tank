@@ -14,7 +14,7 @@ RF24 radio(CE_PIN, CSN_PIN);
 int VRx = A0;
 int VRy = A1;
 int joyButtonPin = 2;
-int deadZone = 15;
+int deadZone = 10;
 
 
 typedef struct {
@@ -46,7 +46,7 @@ void setup()
 void loop()
 {
   LerJoystick();
-  PrintClass();
+  //PrintClass();
   EnviarDados();
 
   delay(100);
