@@ -7,6 +7,7 @@
 int CE_PIN = 9;
 int CSN_PIN = 10;
 const byte slaveAddress[5] = {'R', 'x', 'A', 'A', 'A'};
+unsigned long lastDataReceived;
 
 RF24 radio(CE_PIN, CSN_PIN);
 
@@ -24,11 +25,15 @@ Servo EscEsquerdo;
 Servo EscDireito;
 const int pinMotorEsquerdo = 2;
 const int pinMotorDireito = 3;
-int aceleradorEsquerdo = 0;
-int aceleradorDireito = 0;
+int escMin = 0;
+int escMax = 180;
 #pragma endregion
 
+int aceleradorEsquerdo = 0;
+int aceleradorDireito = 0;
+int modoBaixaVelocidade = 0;
 const int steeringReducer = 2;
+unsigned long lastAnalogBtnPress = millis();
 
 void setup()
 {
@@ -45,15 +50,44 @@ void setup()
 	radio.setDataRate(RF24_250KBPS);
 	radio.openReadingPipe(1, slaveAddress);
 	radio.startListening();
+
+	lastDataReceived = millis();
 }
 
 void loop()
 {
 	while (radio.available())
 	{
+		lastDataReceived = millis();
 		radio.read(&dados, sizeof(dados));
 		//PrintClass();
+		#pragma region Processando o botão do analogico
+		// Só vai alterar caso já tenha passado 1 segundo do ultimo click
+		if (dados.joyButton == 1 && millis() - lastAnalogBtnPress > 1000)
+		{
+			lastAnalogBtnPress = millis();			
+			modoBaixaVelocidade = (modoBaixaVelocidade == 0 ? 1 : 0);
+
+			if (modoBaixaVelocidade == 0)
+			{
+				escMin = 0;
+				escMax = 180;
+			}
+			else
+			{
+				escMin = 60;
+				escMax = 180 - 60;
+			}			
+		}
+		#pragma endregion
+		
 		processarAceleradorTanque();
+		escreverESC();
+	}
+	// timeout do controle
+	if (millis() - lastDataReceived > 2000)
+	{
+		resetarAcelerador();
 		escreverESC();
 	}
 }
@@ -126,6 +160,6 @@ void processarAceleradorTanque()
 
 void escreverESC()
 {
-	EscEsquerdo.write(map(aceleradorEsquerdo, -512, 512, 0, 180));
-	EscDireito.write(map(aceleradorDireito, -512, 512, 0, 180));
+	EscEsquerdo.write(map(aceleradorEsquerdo, -512, 512, escMin, escMax));
+	EscDireito.write(map(aceleradorDireito, -512, 512, escMin, escMax));
 }
