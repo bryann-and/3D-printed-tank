@@ -1,21 +1,12 @@
-#include <nRF24L01.h>
-#include <RF24.h>
-#include <SPI.h>
-
-// Radio
-int CE_PIN = 9;
-int CSN_PIN = 10;
-const byte slaveAddress[5] = { 'R','x','A','A','A' };
-
-RF24 radio(CE_PIN, CSN_PIN);
-
+#include "esp_now.h"
+#include "WiFi.h"
 
 //Joystick
-int VRx = A0;
-int VRy = A1;
-int joyButtonPin = 2;
-int deadZone = 10;
+int VRx = 34; // diferente dos fios, mas é pq o codigo no tank é diferente
+int VRy = 33;
+int joyButtonPin = 17;
 
+int deadZone = 45;
 
 typedef struct {
   int joyButton;
@@ -23,31 +14,54 @@ typedef struct {
   int joyY;
 }
 InformacoesEnvio;
-
 InformacoesEnvio dados;
+
+// ESP NOW - transmissão de dados
+uint8_t endereco[] = {0xA4,0xCF,0x12,0x81,0x06,0x98};
+esp_now_peer_info_t peerInfo;
 
 void setup()
 {
   Serial.begin(9600);
   Serial.println("Iniciando Controle");
 
-  // Joystick
-  pinMode(VRx, INPUT);
-  pinMode(VRy, INPUT);
-  pinMode(joyButtonPin, INPUT_PULLUP);
+  // Buscando o MAC da placa
+  WiFi.mode(WIFI_MODE_STA);
+  //Serial.println(WiFi.macAddress());
 
-  // Radio
-  radio.begin();
-  radio.setDataRate(RF24_250KBPS);
-  radio.setRetries(3, 5); // delay, count
-  radio.openWritingPipe(slaveAddress);
+  // Iniciando ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  // Registrando callback
+  esp_now_register_send_cb(DadosEnviados);
+
+  // Register peer
+  memcpy(peerInfo.peer_addr, endereco, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  
+  // Add peer        
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
 }
 
 void loop()
 {
   LerJoystick();
-  //PrintClass();
-  EnviarDados();
+  PrintClass();
+  
+  esp_err_t resultado = esp_now_send(endereco, (uint8_t*)&dados, sizeof(dados));
+
+  // if (resultado == ESP_OK) {
+  //   Serial.println("Enviado");
+  // }
+  // else {
+  //   Serial.println("Erro");
+  // }
 
   delay(100);
 }
@@ -55,9 +69,8 @@ void loop()
 void LerJoystick()
 {
   dados.joyButton = digitalRead(joyButtonPin);
-  dados.joyX = map(analogRead(VRx), 0, 1023, -512, 512);
-  // Invertendo o Y pois o joystick tem os valores invertidos
-  dados.joyY = map(analogRead(VRy), 0, 1023, 512, -512);
+  dados.joyX = map(analogRead(VRx), 0, 4095, -512, 512);
+  dados.joyY = map(analogRead(VRy), 0, 4095, -512, 512);
 
   // Aplicando deadzone
   if (abs(dados.joyX) < deadZone)
@@ -80,21 +93,9 @@ void PrintClass()
   Serial.println(dados.joyButton);
 }
 
-void EnviarDados()
+// Callback
+void DadosEnviados(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-  // Enviando informações
-  if (radio.write(&dados, sizeof(dados)))
-  {
-    // Serial.println("  Acknowledge received");
-  }
-  else 
-  {
-    Serial.println("  Tx failed");
-  }
-
-  while (radio.available()) // Empty received auto-ACKs from PTX's RX FIFOs.
-  {
-    uint64_t blank;
-    radio.read(&blank, sizeof(blank));
-  }
+  // Serial.print("\r\nLast Packet Send Status:\t");
+  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }

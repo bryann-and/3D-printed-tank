@@ -1,15 +1,6 @@
-#include <Servo.h>
-#include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
-
-// Radio
-int CE_PIN = 9;
-int CSN_PIN = 10;
-const byte slaveAddress[5] = {'R', 'x', 'A', 'A', 'A'};
-unsigned long lastDataReceived;
-
-RF24 radio(CE_PIN, CSN_PIN);
+#include "ESP32Servo.h"
+#include "esp_now.h"
+#include "WiFi.h"
 
 typedef struct
 {
@@ -20,76 +11,96 @@ typedef struct
 
 InformacoesEnvio dados;
 
+unsigned long ultimoSinal;
+
 #pragma region ESCs
-Servo EscEsquerdo;
-Servo EscDireito;
-const int pinMotorEsquerdo = 2;
-const int pinMotorDireito = 3;
-int escMin = 0;
-int escMax = 180;
+const int pinMotorEsquerdo = 32;
+const int pinMotorDireito = 33;
+int escMin = 205;
+int escMax = 410;
 #pragma endregion
 
 int aceleradorEsquerdo = 0;
 int aceleradorDireito = 0;
 int modoBaixaVelocidade = 0;
 const int steeringReducer = 2;
-unsigned long lastAnalogBtnPress = millis();
+unsigned long lastAnalogBtnPress;
 
 void setup()
 {
+	// while (!Serial);
 	Serial.begin(9600);
 	Serial.println("Iniciando Receptor");
 
-	EscEsquerdo.attach(pinMotorEsquerdo, 1000, 2000);
-	EscDireito.attach(pinMotorDireito, 1000, 2000);
+	const int freq = 50;
+	// ESC esquerdo
+	ledcSetup(1, freq, 12);
+	ledcAttachPin(pinMotorEsquerdo, 1);
+	// ESC direito
+	ledcSetup(2, freq, 12);
+	ledcAttachPin(pinMotorDireito, 2);
 
 	resetarAcelerador();
-	escreverESC();	
-	
-	radio.begin();
-	radio.setDataRate(RF24_250KBPS);
-	radio.openReadingPipe(1, slaveAddress);
-	radio.startListening();
+	escreverESC();
 
-	lastDataReceived = millis();
+	ultimoSinal = lastAnalogBtnPress = millis();
+
+	// Buscando o MAC da placa
+	WiFi.mode(WIFI_MODE_STA);
+	Serial.println(WiFi.macAddress());
+
+	// Iniciando ESP-NOW
+	if (esp_now_init() != ESP_OK) {
+		Serial.println("Error initializing ESP-NOW");
+		return;
+	}
+	// Registrando callback
+	esp_now_register_recv_cb(DadosRecebidos);
 }
 
 void loop()
-{
-	while (radio.available())
+{	
+	// 	PrintClass();
+	#pragma region Processando o botão do analogico
+	// Só vai alterar caso já tenha passado 1 segundo do ultimo click
+	if (dados.joyButton == 1 && millis() - lastAnalogBtnPress > 1000)
 	{
-		lastDataReceived = millis();
-		radio.read(&dados, sizeof(dados));
-		//PrintClass();
-		#pragma region Processando o botão do analogico
-		// Só vai alterar caso já tenha passado 1 segundo do ultimo click
-		if (dados.joyButton == 1 && millis() - lastAnalogBtnPress > 1000)
-		{
-			lastAnalogBtnPress = millis();			
-			modoBaixaVelocidade = (modoBaixaVelocidade == 0 ? 1 : 0);
+		lastAnalogBtnPress = millis();
+		modoBaixaVelocidade = (modoBaixaVelocidade == 0 ? 1 : 0);
 
-			if (modoBaixaVelocidade == 0)
-			{
-				escMin = 0;
-				escMax = 180;
-			}
-			else
-			{
-				escMin = 60;
-				escMax = 180 - 60;
-			}			
+		if (modoBaixaVelocidade == 0)
+		{
+			escMin = 0;
+			escMax = 180;
 		}
-		#pragma endregion
-		
-		processarAceleradorTanque();
-		escreverESC();
+		else
+		{
+			escMin = 60;
+			escMax = 180 - 60;
+		}
 	}
+	#pragma endregion
+	
+	// lerAceleradorViaSerial();
+	processarAceleradorTanque();
+	escreverESC();
+	PrintClass();
+
 	// timeout do controle
-	if (millis() - lastDataReceived > 2000)
+	if (millis() - ultimoSinal > 2000)
 	{
+		Serial.println("Timeout!");
 		resetarAcelerador();
 		escreverESC();
 	}
+
+	// delay(100);
+}
+
+void DadosRecebidos(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&dados, incomingData, sizeof(dados));  
+  ultimoSinal = millis();
+  PrintClass();
 }
 
 void PrintClass()
@@ -100,6 +111,17 @@ void PrintClass()
 	Serial.print(dados.joyY);
 	Serial.print(" | Button: ");
 	Serial.println(dados.joyButton);
+}
+
+void lerAceleradorViaSerial ()
+{
+	if (Serial.available())
+	{
+		String leitura = Serial.readString();
+		
+		dados.joyX = leitura.toInt();
+		dados.joyY = leitura.toInt();
+	}
 }
 
 void resetarAcelerador()
@@ -160,6 +182,8 @@ void processarAceleradorTanque()
 
 void escreverESC()
 {
-	EscEsquerdo.write(map(aceleradorEsquerdo, -512, 512, escMin, escMax));
-	EscDireito.write(map(aceleradorDireito, -512, 512, escMin, escMax));
+	//EscEsquerdo.write(map(aceleradorEsquerdo, -512, 512, escMin, escMax));
+	ledcWrite(1, map(aceleradorEsquerdo, -512, 512, escMin, escMax));
+	//EscDireito.write(map(aceleradorDireito, -512, 512, escMin, escMax));
+	ledcWrite(2, map(aceleradorDireito, -512, 512, escMin, escMax));
 }
